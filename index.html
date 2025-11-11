@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sensor Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #0d47a1;
+      margin-bottom: 25px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #1565c0;
+      border-bottom: 2px solid #e3f2fd;
+      padding-bottom: 8px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #333;
+    }
+
+    .summary p {
+      margin: 6px 0;
+      font-weight: 500;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #1976d2;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f1f8ff;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    ul li {
+      background: #e3f2fd;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ IoT Sensor Dashboard</h1>
+
+    <div class="card summary">
+      <h3>📊 Summary Data</h3>
+      <p><strong>Suhu Max:</strong> <span id="suhu_max">-</span></p>
+      <p><strong>Suhu Min:</strong> <span id="suhu_min">-</span></p>
+      <p><strong>Suhu Rata-rata:</strong> <span id="suhu_rata2">-</span></p>
+    </div>
+
+    <div class="card">
+      <h3>🔥 Suhu Max & Humidity Max</h3>
+      <table id="table-max">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Suhu</th>
+            <th>Humidity</th>
+            <th>Kecerahan</th>
+            <th>Waktu</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>🗓️ Bulan & Tahun Suhu Max</h3>
+      <ul id="month-list"></ul>
+    </div>
+
+
+  <script>
+    const API_URL = "http://localhost/sensorapi/index.php";
+
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        // === Summary Data ===
+        document.getElementById("suhu_max").textContent = data.suhu_max;
+        document.getElementById("suhu_min").textContent = data.suhu_min;
+        document.getElementById("suhu_rata2").textContent = data.suhu_rata2;
+
+        // === Table Max ===
+        const tbodyMax = document.querySelector("#table-max tbody");
+        data.nilai_suhu_max_humid_max.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.idx}</td>
+            <td>${row.suhun}</td>
+            <td>${row.humid}</td>
+            <td>${row.kecerahan}</td>
+            <td>${row.timestamp}</td>
+          `;
+          tbodyMax.appendChild(tr);
+        });
+
+        // === Month-year list ===
+        const ul = document.getElementById("month-list");
+        data.month_year_max.forEach(m => {
+          const li = document.createElement("li");
+          li.textContent = m;
+          ul.appendChild(li);
+        });
+
+        // === Semua Data Sensor ===
+        if (data.semua_data) {
+          const tbodyAll = document.querySelector("#table-all tbody");
+          data.semua_data.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${row.id}</td>
+              <td>${row.suhu}</td>
+              <td>${row.humidity}</td>
+              <td>${row.light}</td>
+              <td>${row.timestamp}</td>
+            `;
+            tbodyAll.appendChild(tr);
+          });
+        }
+      })
+      .catch(err => console.error("ERROR FETCH API:", err));
+  </script>
+</body>
+</html>
